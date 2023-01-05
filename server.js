@@ -10,6 +10,12 @@ app.use(express.json());
 
 app.use(express.static('public'));
 
+const uuid = () => {
+    return Math.floor((1 + Math.random()) * 0x10000)
+    .toString(16)
+    .substring(1)
+};
+
 const readAndAppend = (content, file) => {
     fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
@@ -44,12 +50,13 @@ app.get('/api/notes', (req, res) => {
 app.post('/api/notes', (req, res) => {
     console.info(`${req.method} request received!`);
 
-    const { title, text } = req.body;
+    const { title, text, id } = req.body;
 
     if (req.body) {
         const newNote = {
             title,
-            text
+            text,
+            id: uuid()
         }
         readAndAppend(newNote, './db/db.json');
         res.json('Note added successfully!');
