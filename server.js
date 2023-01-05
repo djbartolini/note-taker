@@ -37,7 +37,7 @@ app.get('/notes', (req, res) => {
 
 app.get('/api/notes', (req, res) => {
     console.info(`${req.method} request recieved!`);
-    const data = fs.readFileSync('./db/db.json');
+    const data = fs.readFileSync('./db/db.json', 'utf8');
     res.json(JSON.parse(data));
 })
 
