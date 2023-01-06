@@ -17,21 +17,23 @@ const uuid = () => {
 };
 
 const readAndAppend = (content, file) => {
-    fs.readFile(file, 'utf8', (err, data) => {
-      if (err) {
-        console.error(err);
-      } else {
+    const data = fs.readFileSync(file, 'utf8');
+    if (data) {
         const parsedData = JSON.parse(data);
         parsedData.push(content);
         writeToFile(file, parsedData);
-      }
-    });
+    }
   };
 
+const deleteAndAppend = (file, id) => {
+    const data = fs.readFileSync(file, 'utf8');
+    const parsedData = JSON.parse(data);
+    const newNotes = parsedData.filter(note => note.id !== id);
+    writeToFile(file, newNotes);
+}
+
 const writeToFile = (destination, content) =>
-  fs.writeFile(destination, JSON.stringify(content, null, 4), (err) =>
-    err ? console.error(err) : console.info(`\nData written to ${destination}`)
-  );
+  fs.writeFileSync(destination, JSON.stringify(content, null, 4));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './public/index.html'));
@@ -50,7 +52,7 @@ app.get('/api/notes', (req, res) => {
 app.post('/api/notes', (req, res) => {
     console.info(`${req.method} request received!`);
 
-    const { title, text, id } = req.body;
+    const { title, text } = req.body;
 
     if (req.body) {
         const newNote = {
@@ -63,6 +65,14 @@ app.post('/api/notes', (req, res) => {
     } else {
         res.error('Error adding note.');
     };
+})
+
+app.delete(`/api/notes/:id`, (req, res) => {
+    console.info(`${req.method} request recieved!`);
+    const id = req.params.id;
+
+    deleteAndAppend('./db/db.json', id);
+    res.send();
 })
 
 app.listen(PORT, () =>
